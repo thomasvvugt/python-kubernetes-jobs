@@ -1,0 +1,40 @@
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: batch-jobs-role
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: batch-jobs-binding
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: batch-jobs-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: zero
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    metadata:
+      name: zero-pod
+    spec:
+      containers:
+      - name: zero
+        image: my-python-image
+        # Only use image pull policy for local development,
+        # remove this after publishing an image
+        imagePullPolicy: Never
+      restartPolicy: Never
